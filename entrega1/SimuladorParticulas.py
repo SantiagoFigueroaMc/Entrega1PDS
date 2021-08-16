@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
 import time
+import threading
 
 class Particula:
     px = 0
@@ -158,8 +159,8 @@ def ObtenerDatos(nombre_archivo):
     archivo.close()
     return simulacion,particulas
 
-def SimularParticula(particula_simulada,constante,const):
-
+def SimularParticula(p_id, particula_simulada,constante,const):
+    print(f"Simulando particula #{p_id}")
     # Para plot
     global t
     t = []
@@ -327,16 +328,19 @@ def SimularParticula(particula_simulada,constante,const):
     h_promedio = numpy.mean(lista_alturas_alcanzadas)
     # Resultado resumido
     resultado = {
+        "id":p_id,
         "posiciones_finales":[round(nueva_particula.px,2), round(nueva_particula.py,2), round(nueva_particula.pz,2)],
         "cantidad_de_saltos":total_saltos,
         "altura_maxima":round(h_max,2),
         "promedio_altura_saltos":round(h_promedio,2)
     }
+    resultados_reales[p_id] = resultado
     return resultado
 
 def GuardarResultadosEnArchivo(nombre_archivo, lista_resultados):
     file = open(f'{nombre_archivo}.out', 'w')
-    for resultado in lista_resultados:
+    for r in range(len(lista_resultados)):
+        resultado = lista_resultados[r]
         linea = f"{resultado['posiciones_finales'][0]} "
         linea += f"{resultado['posiciones_finales'][1]} "
         linea += f"{resultado['posiciones_finales'][2]} "
@@ -347,7 +351,7 @@ def GuardarResultadosEnArchivo(nombre_archivo, lista_resultados):
         file.write(linea)
     file.close()
 
-filename = "input02"
+filename = "input01"
 lista_de_particulas = []
 datos = ObtenerDatos(f"{filename}.in")
 lista_de_particulas = datos[1]
@@ -359,15 +363,25 @@ dato = datos[0]
 #Simulacion
 #CargarDatos()
 const = 1 + dato.relacion_densidad_agua + 0.5
-resultados_reales =[]
+resultados_reales = {}
 i = 0
 t_cero = time.time()
-for particula in lista_de_particulas: #Simular solo una particula
+threads = list()
+for p in range(len(lista_de_particulas)): #Simular solo una particula
       i += 1
+      particula = lista_de_particulas[p]
       t_lap = time.time()
-      resultados_reales.append(SimularParticula(particula,dato,const))
+      x = threading.Thread(target=(SimularParticula), args=(p, particula, dato, const))
+      threads.append(x)
+      x.start()
+      #resultados_reales.append(SimularParticula(particula,dato,const))
       print(f"particula #{i} in {time.time() - t_lap:.2f} seconds ({time.time() - t_cero:.2f} s total)")
       #print(resultados_reales)
+
+while(threading.activeCount() > 1):
+    pass
+
+print(len(resultados_reales))
 
 t = numpy.arange(0.0, len(lista_posiciones_x)*delta_t, delta_t)
 fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3)
