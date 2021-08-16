@@ -13,6 +13,7 @@ import threading
 VFLUIDO = {}
 REP = {}
 MAG_RELATIVAS = {}
+PESOSUMERGIDO = {}
 
 
 class Particula:
@@ -40,8 +41,8 @@ class Variables:
     CL = 0
 
 def Drag(v_relativa,magnitud_v_relativa,coeficiente_de_arrastre,var): #todos los datos que se le pasan son datos cuando se esta en t-1
-    resultado = -0.75 * (1/var) * coeficiente_de_arrastre * v_relativa * magnitud_v_relativa
-    return resultado
+    #resultado = -0.75 * (1/var) * coeficiente_de_arrastre * v_relativa * magnitud_v_relativa
+    return -0.75 * (1/var) * coeficiente_de_arrastre * v_relativa * magnitud_v_relativa
 
 
 def VRelativaX(v_antigua, taus, pz):
@@ -54,16 +55,14 @@ def VRelativaX(v_antigua, taus, pz):
 
 def VFluido(taus,pz):
     if 73 * math.sqrt(taus) < 5:
-        usando = 2.5 * math.log(73 * math.sqrt(taus) * abs(pz)) + 5.5
+        return 2.5 * math.log(73 * math.sqrt(taus) * abs(pz)) + 5.5
     elif 5 <= 73 * math.sqrt(taus) < 70:
-        usando = 2.5 * math.log(73 * math.sqrt(taus) * abs(pz)) + 5.5 - 2.5 * math.log( 1 + 0.3 * 73 * math.sqrt(taus))
-    else:
-        usando = 2.5 * math.log(30 * abs(pz))
-    return usando
+        return 2.5 * math.log(73 * math.sqrt(taus) * abs(pz)) + 5.5 - 2.5 * math.log( 1 + 0.3 * 73 * math.sqrt(taus))
+    return 2.5 * math.log(30 * abs(pz))
 
 def MagnitudVRelativa(u_relativa, v_relativa, w_relativa):
-    resultado = math.sqrt( (u_relativa**2) + (v_relativa**2) + (w_relativa**2) )
-    return resultado
+    #resultado = math.sqrt( (u_relativa**2) + (v_relativa**2) + (w_relativa**2) )
+    return math.sqrt( (u_relativa**2) + (v_relativa**2) + (w_relativa**2) )
 
 def CoeficienteDeArrastre(rep):
     componente1 = 1 + (10**4) * (rep**-0.5)
@@ -81,16 +80,16 @@ def Rep(magnitud_v_relativa, taus):
         return resultado
 
 def PesoSumergidoX(constante, taus, teta):
-    resultado = (1/constante) * math.sin(teta) * (1/taus)
-    return resultado
+    #resultado = (1/constante) * math.sin(teta) * (1/taus)
+    return (1/constante) * math.sin(teta) * (1/taus)
 
 def PesoSumergidoZ(constante, taus, teta):
-    resultado = - (1/constante) * math.cos(teta) * (1/taus)
-    return resultado
+    #resultado = - (1/constante) * math.cos(teta) * (1/taus)
+    return - (1/constante) * math.cos(teta) * (1/taus)
 
 def MasaVirtual(constante, pz_antiguo, w_relativa):
-    resultado = (0.5/ constante) *  w_relativa * (2.5/pz_antiguo)
-    return resultado
+    #resultado = (0.5/ constante) *  w_relativa * (2.5/pz_antiguo)
+    return (0.5/ constante) *  w_relativa * (2.5/pz_antiguo)
 
 def VSuperior(u_particula, taus, pz, v_relativa, w_relativa):
     u_relativa = u_particula - VFluido(taus,pz+0.5)
@@ -103,14 +102,17 @@ def VBotton(u_particula, taus, pz, v_relativa, w_relativa):
     return resultado
 
 def FuerzaElevacion(constante, CL, top, bot):
-    resultado = 0.75 * (1/constante) * CL * (top - bot)
-    return resultado
+    #resultado = 0.75 * (1/constante) * CL * (top - bot)
+    return 0.75 * (1/constante) * CL * (top - bot)
 
 def AnguloRebote(w_prima, u_actual):
-    resultado = math.atan(w_prima/u_actual)
+    #resultado = math.atan(w_prima/u_actual)
+    """
     while resultado > math.radians(75):
+        print('help')
         resultado = math.atan(w_prima/u_actual)
-    return resultado
+    """
+    return math.atan(w_prima/u_actual)
 
 def UPrima(alfa,w_prima):
     error = random.uniform(math.radians(0), math.radians(10))
@@ -123,13 +125,13 @@ def VPrima(u_prima):
     return resultado
 
 def Posicion(p_vieja, v_actual, delta_t):
-    resultado = p_vieja + v_actual * delta_t
-    return resultado
+    #resultado = p_vieja + v_actual * delta_t
+    return p_vieja + v_actual * delta_t
 
 def Velocidad(v_vieja, delta_t, fuerzas):
-    sumatoria = 0
-    for fuerza in fuerzas:
-        sumatoria += fuerza
+    sumatoria = sum(fuerzas)
+    #for fuerza in fuerzas:
+    #     sumatoria += fuerza
     resultado = v_vieja + delta_t * sumatoria
     return resultado
 
@@ -202,22 +204,26 @@ def SimularParticula(p_id, particula_simulada,constante,const, t_0):
 
         # Fuerzas X
         fuerza_arrastre_x = Drag(vrX,mgR,coeficiente,const)
-        peso_sumergido_x = PesoSumergidoX(const, constante.taus, constante.angulo)
+        if (constante.angulo in PESOSUMERGIDO):
+            peso_sumergido_x = PESOSUMERGIDO[constante.angulo]
+        else:
+            peso_sumergido_x = PesoSumergidoX(const, constante.taus, constante.angulo)
+            PESOSUMERGIDO[constante.angulo] = peso_sumergido_x
         masa_virtual = MasaVirtual(const, pz_antiguo, vrZ)
 
         Fx=[fuerza_arrastre_x, peso_sumergido_x, masa_virtual]
 
         # Fuerzas Y
-        fuerza_arrastre_y = Drag(vrY,mgR,coeficiente,const)
+        fuerza_arrastre_y = Drag(vrY, mgR, coeficiente, const)
 
         Fy = [fuerza_arrastre_y]
 
         # Fuerzas Z
-        fuerza_arrastre_z = Drag(vrZ,mgR,coeficiente,const)
+        fuerza_arrastre_z = Drag(vrZ, mgR, coeficiente, const)
         peso_sumergido_z = PesoSumergidoZ(const, constante.taus, constante.angulo)
-        v_top = VSuperior(vx_antiguo,constante.taus,pz_antiguo, vrY, vrZ)
-        v_bot = VBotton(vx_antiguo,constante.taus,pz_antiguo, vrY, vrZ)
-        Lift = FuerzaElevacion(const,constante.CL, v_top, v_bot)
+        v_top = VSuperior(vx_antiguo, constante.taus, pz_antiguo, vrY, vrZ)
+        v_bot = VBotton(vx_antiguo, constante.taus, pz_antiguo, vrY, vrZ)
+        Lift = FuerzaElevacion(const, constante.CL, v_top, v_bot)
 
         Fz = [fuerza_arrastre_z, peso_sumergido_z, Lift]
 
@@ -302,29 +308,33 @@ const = 1 + dato.relacion_densidad_agua + 0.5
 resultados_reales = {}
 i = 0
 t_cero = time.time()
-# Inicio simulacion en serie
-for p in range(len(lista_de_particulas)): #Simular solo una particula
-    particula = lista_de_particulas[p]
-    t_lap = time.time()
-    SimularParticula(p, particula, dato, const, t_cero)
 
+ejecutar_en_threads = False
 
-# Fin simulacion en serie
-# Inicio simulacion en threads
-"""
-threads = list()
-for p in range(len(lista_de_particulas)): #Simular solo una particula
-    i += 1
-    particula = lista_de_particulas[p]
-    t_lap = time.time()
-    x = threading.Thread(target=(SimularParticula), args=(p, particula, dato, const, t_cero))
-    threads.append(x)
-    x.start()
+if ejecutar_en_threads:
+    # Inicio simulacion en serie
+    for p in range(len(lista_de_particulas)): #Simular solo una particula
+        particula = lista_de_particulas[p]
+        t_lap = time.time()
+        SimularParticula(p, particula, dato, const, t_cero)
+else:
 
-while(threading.activeCount() > 1): # Esperar que terminen los threads
-    pass
-"""
-# Fin de simulacion en threads
+    # Fin simulacion en serie
+    # Inicio simulacion en threads
+
+    threads = list()
+    for p in range(len(lista_de_particulas)): #Simular solo una particula
+        i += 1
+        particula = lista_de_particulas[p]
+        t_lap = time.time()
+        x = threading.Thread(target=(SimularParticula), args=(p, particula, dato, const, t_cero))
+        threads.append(x)
+        x.start()
+
+    while(threading.activeCount() > 1): # Esperar que terminen los threads
+        pass
+
+    # Fin de simulacion en threads
 print(f"{len(lista_de_particulas)} particulas simuladas en {time.time() - t_cero:.2f} segundos")
 
 GuardarResultadosEnArchivo(filename, resultados_reales)
