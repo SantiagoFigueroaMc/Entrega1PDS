@@ -5,6 +5,7 @@ import numpy
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
+import time
 
 class Particula:
     px = 0
@@ -360,10 +361,12 @@ dato = datos[0]
 const = 1 + dato.relacion_densidad_agua + 0.5
 resultados_reales =[]
 i = 0
+t_cero = time.time()
 for particula in lista_de_particulas: #Simular solo una particula
-      print(f"particula #{i}")
       i += 1
+      t_lap = time.time()
       resultados_reales.append(SimularParticula(particula,dato,const))
+      print(f"particula #{i} in {time.time() - t_lap:.2f} seconds ({time.time() - t_cero:.2f} s total)")
       #print(resultados_reales)
 
 t = numpy.arange(0.0, len(lista_posiciones_x)*delta_t, delta_t)
@@ -415,7 +418,7 @@ z = lista_posiciones_z
 y = lista_posiciones_y
 x = lista_posiciones_x
 
-ax10.plot3D(x, y, z,color='green')
+ax10.plot3D(x[:5000], y[:5000], z[:5000],color='green')
 
 ax10.set_title('xyz position in time')
 plt.show()
