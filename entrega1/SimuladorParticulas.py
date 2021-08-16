@@ -159,7 +159,7 @@ def ObtenerDatos(nombre_archivo):
     archivo.close()
     return simulacion,particulas
 
-def SimularParticula(p_id, particula_simulada,constante,const):
+def SimularParticula(p_id, particula_simulada,constante,const, t_0):
     print(f"Simulando particula #{p_id}")
     # Para plot
     global t
@@ -334,6 +334,7 @@ def SimularParticula(p_id, particula_simulada,constante,const):
         "altura_maxima":round(h_max,2),
         "promedio_altura_saltos":round(h_promedio,2)
     }
+    print(f"Particula #{p_id} simulada en {time.time() - t_0:.2f} segundos")
     resultados_reales[p_id] = resultado
     return resultado
 
@@ -351,7 +352,7 @@ def GuardarResultadosEnArchivo(nombre_archivo, lista_resultados):
         file.write(linea)
     file.close()
 
-filename = "input01"
+filename = "input02"
 lista_de_particulas = []
 datos = ObtenerDatos(f"{filename}.in")
 lista_de_particulas = datos[1]
@@ -371,17 +372,14 @@ for p in range(len(lista_de_particulas)): #Simular solo una particula
       i += 1
       particula = lista_de_particulas[p]
       t_lap = time.time()
-      x = threading.Thread(target=(SimularParticula), args=(p, particula, dato, const))
+      x = threading.Thread(target=(SimularParticula), args=(p, particula, dato, const, t_cero))
       threads.append(x)
       x.start()
-      #resultados_reales.append(SimularParticula(particula,dato,const))
-      print(f"particula #{i} in {time.time() - t_lap:.2f} seconds ({time.time() - t_cero:.2f} s total)")
-      #print(resultados_reales)
 
 while(threading.activeCount() > 1):
     pass
 
-print(len(resultados_reales))
+print(f"{len(lista_de_particulas)} particulas simuladas en {time.time() - t_cero:.2f} segundos")
 
 t = numpy.arange(0.0, len(lista_posiciones_x)*delta_t, delta_t)
 fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3)
@@ -425,7 +423,7 @@ ax9.set(xlabel='t', ylabel='Z', title='FZ in time')
 ax9.grid()
 
 #fig.tight_layout()
-plt.show()
+#plt.show()
 
 ax10 = plt.axes(projection = '3d')
 z = lista_posiciones_z
@@ -435,7 +433,7 @@ x = lista_posiciones_x
 ax10.plot3D(x[:5000], y[:5000], z[:5000],color='green')
 
 ax10.set_title('xyz position in time')
-plt.show()
+#plt.show()
 
 
 GuardarResultadosEnArchivo(filename, resultados_reales)
