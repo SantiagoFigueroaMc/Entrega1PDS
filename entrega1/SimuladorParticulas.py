@@ -16,6 +16,7 @@ MAG_RELATIVAS = {}
 PESOSUMERGIDO = {}
 
 
+
 class Particula:
     px = 0
     py = 0
@@ -46,19 +47,23 @@ def Drag(v_relativa,magnitud_v_relativa,coeficiente_de_arrastre,var): #todos los
 
 
 def VRelativaX(v_antigua, taus, pz):
-    if (pz in VFLUIDO):
-        return v_antigua-VFLUIDO[pz]
-    else:
-        usando = VFluido(taus,pz)
-        VFLUIDO[pz] = usando
-        return v_antigua - usando
+    usando = VFluido(taus,pz)
+    return v_antigua - usando
+
 
 def VFluido(taus,pz):
-    if 73 * math.sqrt(taus) < 5:
-        return 2.5 * math.log(73 * math.sqrt(taus) * abs(pz)) + 5.5
-    elif 5 <= 73 * math.sqrt(taus) < 70:
-        return 2.5 * math.log(73 * math.sqrt(taus) * abs(pz)) + 5.5 - 2.5 * math.log( 1 + 0.3 * 73 * math.sqrt(taus))
-    return 2.5 * math.log(30 * abs(pz))
+    v = 0.0
+    if (pz in VFLUIDO):
+        v = VFLUIDO[pz]
+    else:
+        if TAUS_TIME_73 < 5:
+            v = 2.5 * math.log(TAUS_TIME_73 * abs(pz)) + 5.5
+        elif 5 <= TAUS_TIME_73 < 70:
+            v = 2.5 * math.log(TAUS_TIME_73 * abs(pz)) + 5.5 - 2.5 * math.log( 1 + 0.3 * TAUS_TIME_73)
+        else:
+            v = 2.5 * math.log(30 * abs(pz))
+        VFLUIDO[pz] = v
+    return v
 
 def MagnitudVRelativa(u_relativa, v_relativa, w_relativa):
     #resultado = math.sqrt( (u_relativa**2) + (v_relativa**2) + (w_relativa**2) )
@@ -75,7 +80,7 @@ def Rep(magnitud_v_relativa, taus):
     if (magnitud_v_relativa in MAG_RELATIVAS):
         return MAG_RELATIVAS[magnitud_v_relativa]
     else:
-        resultado = magnitud_v_relativa * math.sqrt(taus) * 73
+        resultado = magnitud_v_relativa * TAUS_TIME_73
         MAG_RELATIVAS[magnitud_v_relativa] = resultado
         return resultado
 
@@ -263,6 +268,8 @@ def SimularParticula(p_id, particula_simulada,constante,const, t_0):
 
         tiempo_transcurrido += delta_t
 
+        # Fin while
+
     #print(lista_alturas_alcanzadas)
     h_max = max(lista_alturas_alcanzadas)
     #h_max=1
@@ -302,6 +309,10 @@ tiempo_total_simulacion = datos[0].tiempo_simulacion
 delta_t = datos[0].delta_t
 dato = datos[0]
 
+
+# Valores repetidos
+TAUS_TIME_73 = numpy.sqrt(dato.taus) * 73
+
 #Simulacion
 #CargarDatos()
 const = 1 + dato.relacion_densidad_agua + 0.5
@@ -311,7 +322,7 @@ t_cero = time.time()
 
 ejecutar_en_threads = False
 
-if ejecutar_en_threads:
+if not ejecutar_en_threads:
     # Inicio simulacion en serie
     for p in range(len(lista_de_particulas)): #Simular solo una particula
         particula = lista_de_particulas[p]
