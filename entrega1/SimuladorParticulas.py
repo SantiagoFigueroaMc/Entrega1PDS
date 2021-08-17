@@ -137,9 +137,11 @@ def main():
     manager = mp.Manager()
     results = manager.dict()
 
-    filename = "input01.in"
+    filename = "input01"
 
-    entorno, particulas = ObtenerDatos(filename)
+    total_time = time.time()
+
+    entorno, particulas = ObtenerDatos(f"{filename}.in")
 
     pool = mp.Pool(len(particulas))
 
@@ -160,10 +162,8 @@ def main():
     for i in range(len(particulas)):
         lista_resultados.append(results[i])
 
-
-
+    print(f"{len(particulas)} particula(s) simladas en {time.time() - total_time:.2f} segundos")
     GuardarResultadosEnArchivo(filename, lista_resultados)
-    print(lista_resultados)
 
 if __name__ == "__main__":
     main()
