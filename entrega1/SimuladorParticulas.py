@@ -6,40 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
 import time
-import threading
+import multiprocessing as mp
 
-
-# Diccionarios para memorizar
-VFLUIDO = {}
-REP = {}
-MAG_RELATIVAS = {}
-PESOSUMERGIDO = {}
-
-
-
-class Particula:
-    px = 0
-    py = 0
-    pz = 0
-    vx = 0
-    vy = 0
-    vz = 0
-
-    def CrearParticula(self,p1,p2,p3,v1,v2,v3):
-        self.px = float(p1)
-        self.py = float(p2)
-        self.pz = float(p3)
-        self.vx = float(v1)
-        self.vy = float(v2)
-        self.vz = float(v3)
-
-class Variables:
-    delta_t = 0
-    tiempo_simulacion = 0
-    angulo = 0
-    relacion_densidad_agua = 0
-    taus = 0
-    CL = 0
 
 def Drag(v_relativa,magnitud_v_relativa,coeficiente_de_arrastre,var): #todos los datos que se le pasan son datos cuando se esta en t-1
     #resultado = -0.75 * (1/var) * coeficiente_de_arrastre * v_relativa * magnitud_v_relativa
@@ -300,52 +268,56 @@ def GuardarResultadosEnArchivo(nombre_archivo, lista_resultados):
         file.write(linea)
     file.close()
 
-filename = "input01"
-lista_de_particulas = []
-datos = ObtenerDatos(f"{filename}.in")
-lista_de_particulas = datos[1]
 
-tiempo_total_simulacion = datos[0].tiempo_simulacion
-delta_t = datos[0].delta_t
-dato = datos[0]
+def main():
+    class Particula:
+        px = 0
+        py = 0
+        pz = 0
+        vx = 0
+        vy = 0
+        vz = 0
+
+        def CrearParticula(self,p1,p2,p3,v1,v2,v3):
+            self.px = float(p1)
+            self.py = float(p2)
+            self.pz = float(p3)
+            self.vx = float(v1)
+            self.vy = float(v2)
+            self.vz = float(v3)
+
+    class Variables:
+        delta_t = 0
+        tiempo_simulacion = 0
+        angulo = 0
+        relacion_densidad_agua = 0
+        taus = 0
+        CL = 0
+
+    filename = "input01"
+    lista_de_particulas = []
+    datos = ObtenerDatos(f"{filename}.in")
+    lista_de_particulas = datos[1]
+
+    tiempo_total_simulacion = datos[0].tiempo_simulacion
+    delta_t = datos[0].delta_t
+    dato = datos[0]
+
+    i = 0
+    t_cero = time.time()
+
+    # Valores repetidos
+    #TAUS_TIME_73 = numpy.sqrt(dato.taus) * 73
+    #const = 1 + dato.relacion_densidad_agua + 0.5
+
+    #Simulacion
+    #CargarDatos()
+    resultados_reales = {}
 
 
-# Valores repetidos
-TAUS_TIME_73 = numpy.sqrt(dato.taus) * 73
+    print(f"{len(lista_de_particulas)} particulas simuladas en {time.time() - t_cero:.2f} segundos")
 
-#Simulacion
-#CargarDatos()
-const = 1 + dato.relacion_densidad_agua + 0.5
-resultados_reales = {}
-i = 0
-t_cero = time.time()
+    GuardarResultadosEnArchivo(filename, resultados_reales)
 
-ejecutar_en_threads = False
-
-if not ejecutar_en_threads:
-    # Inicio simulacion en serie
-    for p in range(len(lista_de_particulas)): #Simular solo una particula
-        particula = lista_de_particulas[p]
-        t_lap = time.time()
-        SimularParticula(p, particula, dato, const, t_cero)
-else:
-
-    # Fin simulacion en serie
-    # Inicio simulacion en threads
-
-    threads = list()
-    for p in range(len(lista_de_particulas)): #Simular solo una particula
-        i += 1
-        particula = lista_de_particulas[p]
-        t_lap = time.time()
-        x = threading.Thread(target=(SimularParticula), args=(p, particula, dato, const, t_cero))
-        threads.append(x)
-        x.start()
-
-    while(threading.activeCount() > 1): # Esperar que terminen los threads
-        pass
-
-    # Fin de simulacion en threads
-print(f"{len(lista_de_particulas)} particulas simuladas en {time.time() - t_cero:.2f} segundos")
-
-GuardarResultadosEnArchivo(filename, resultados_reales)
+if __name__ == "__main__":
+    main()
