@@ -137,13 +137,13 @@ def main():
     manager = mp.Manager()
     results = manager.dict()
 
-    filename = "input03"
+    filename = "input01"
 
     total_time = time.time()
 
     entorno, particulas = ObtenerDatos(f"{filename}.in")
     
-    particulas = particulas[:60] # Pool no aguanta más de 62 trabajadores
+    particulas = particulas[:10] # Pool no aguanta más de 62 trabajadores
 
     pool = mp.Pool(len(particulas))
 
