@@ -87,6 +87,11 @@ def VPrima(u_prima):
 def Posicion(p_vieja, v_actual, delta_t):
     resultado = p_vieja + v_actual * delta_t
     return resultado
+    
+def PosicionZ(p_vieja, v_actual, delta_t):
+    resultado = p_vieja + v_actual * delta_t
+    print(resultado)
+    return resultado
 
 def Velocidad(v_vieja, delta_t, fuerzas):
     sumatoria = 0
