@@ -4,29 +4,69 @@ from Archivo import *
 from Modelos import *
 import time
 
-entorno = Variables
-entorno.taus = 0.067
-entorno.angulo = 0.001
-entorno.relacion_densidad_agua = 1.65
-entorno.CL = 0.2
+def ObtenerDatos(nombre_archivo):
+    contador_linea=0
+    pos_x = []
+    pos_y = []
+    pos_z = []
+    vel_x = []
+    vel_y = []
+    vel_z = []
+    simulacion = Variables()
+    archivo = open(nombre_archivo,'r')
+    while True:
+        linea = archivo.readline()
+        linea = linea.split()
 
-t_simulacion = 100
-delta_t = 0.001
+        if len(linea) != 0:
+            if contador_linea == 0:
+                simulacion.tiempo_simulacion = float(linea[0])
+                simulacion.delta_t = float(linea[1])
 
+            elif contador_linea == 1:
+                simulacion.angulo = float(linea[0])
+                simulacion.relacion_densidad_agua = float(linea[1])
+                simulacion.taus = float(linea[2])
+                simulacion.CL = float(linea[3])
+
+            else:
+                pos_x.append(float(linea[0]))
+                pos_y.append(float(linea[1]))
+                pos_z.append(float(linea[2]))
+                vel_x.append(float(linea[3]))
+                vel_y.append(float(linea[4]))
+                vel_z.append(float(linea[5]))
+
+            contador_linea+=1
+        else:
+            break
+
+    archivo.close()
+    return simulacion,pos_x,pos_y,pos_z,vel_x,vel_y,vel_z
+
+
+
+
+archivo="input01"
+dato = ObtenerDatos(f"{archivo}.in")
+
+entorno= dato[0]
+t_simulacion = entorno.tiempo_simulacion
+delta_t = entorno.delta_t
 const = 1 + entorno.relacion_densidad_agua + 0.5
     
 # posiciones para tres particulas
-pos_x = np.array([0, 0, 0, 0, 0])
-pos_y = np.array([0, 1, 2, 3, 4])
-pos_z = np.array([.6, .6, .6, .6, .6])
+pos_x = np.array(dato[1])
+pos_y = np.array(dato[2])
+pos_z = np.array(dato[3])
 # velocidades para tres particulas
-vel_x = np.array([4.15 , 3.15, 2.15, 3.15, 4.15])
-vel_y = np.array([0.1, -0.1, 0.1, -0.1, 0.1])
-vel_z = np.array([1.85, 2, 2, 1.5, 1.2])
+vel_x = np.array(dato[4])
+vel_y = np.array(dato[5])
+vel_z = np.array(dato[6])
 
 t_cero = time.time()
 # simular 100 iteraciones
-while(t_simulacion > 0): 
+while(t_simulacion> 0): 
     #print("Tiempo restante:", t_simulacion)
     v_rel_x = VRelativaX(vel_x, entorno.taus, pos_z)
     

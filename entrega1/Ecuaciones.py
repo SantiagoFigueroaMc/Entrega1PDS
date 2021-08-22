@@ -12,11 +12,11 @@ def VRelativaX(v_antigua, taus,pz):
 
 def VFluido(taus,pz):
     if 73 * numpy.sqrt(taus) < 5:
-        usando = 2.5 * numpy.log(73 * numpy.sqrt(taus) * abs(pz)) + 5.5
+        usando = 2.5 * numpy.log(73 * numpy.sqrt(taus) * pz) + 5.5
     elif 5 <= 73 * numpy.sqrt(taus) < 70:
-        usando = 2.5 * numpy.log(73 * numpy.sqrt(taus) * abs(pz)) + 5.5 - 2.5 * numpy.log( 1 + 0.3 * 73 * numpy.sqrt(taus))
+        usando = 2.5 * numpy.log(73 * numpy.sqrt(taus) * pz) + 5.5 - 2.5 * numpy.log( 1 + 0.3 * 73 * numpy.sqrt(taus))
     else:
-        usando = 2.5 * numpy.log(30 * abs(pz))
+        usando = 2.5 * numpy.log(30 * pz)
 
     return usando
 
