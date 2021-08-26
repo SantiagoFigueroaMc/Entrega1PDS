@@ -143,31 +143,30 @@ def main():
     entorno, particulas = ObtenerDatos(f"{filename}.in")
     
     
-    else:
-        particulas = particulas[:10] # Pool no aguanta más de 62 trabajadores
+    particulas = particulas[:10] # Pool no aguanta más de 62 trabajadores
     
-        pool = mp.Pool(len(particulas))
+    pool = mp.Pool(len(particulas))
     
-        jobs = []
+    jobs = []
     
     
-        for p in range(len(particulas)):
-            particula = particulas[p]
-            job = pool.apply_async(SimularParticula, (p, particula, entorno, results))
-            jobs.append(job)
+    for p in range(len(particulas)):
+        particula = particulas[p]
+        job = pool.apply_async(SimularParticula, (p, particula, entorno, results))
+        jobs.append(job)
     
-        for job in jobs:
-            job.get()
+    for job in jobs:
+        job.get()
     
-        pool.close()
-        pool.join()
+    pool.close()
+    pool.join()
     
-        lista_resultados = []
-        for i in range(len(particulas)):
-            lista_resultados.append(results[i])
+    lista_resultados = []
+    for i in range(len(particulas)):
+        lista_resultados.append(results[i])
     
-        print(f"{len(particulas)} particula(s) simladas en {time.time() - total_time:.2f} segundos")
-        GuardarResultadosEnArchivo(filename, lista_resultados)
+    print(f"{len(particulas)} particula(s) simladas en {time.time() - total_time:.2f} segundos")
+    GuardarResultadosEnArchivo(filename, lista_resultados)
 
 if __name__ == "__main__":
     main()
