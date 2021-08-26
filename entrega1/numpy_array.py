@@ -4,7 +4,7 @@ from Archivo import *
 from Modelos import *
 import time
 
-archivo="input03"
+archivo="c6-p2"
 
 def ObtenerDatos(nombre_archivo):
     contador_linea=0
