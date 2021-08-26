@@ -104,21 +104,16 @@ while(t_simulacion > 0):
     pos_z = Posicion(pos_z, vel_z, delta_t)
     
 
+    for p in np.where(pos_z < pos_antiguo)[0]:
+        lista_alturas_alcanzadas[p].append(pos_antiguo[p])
 
-    for p in range(len(pos_z)):
-        
-        if (pos_z[p] < pos_antiguo[p]):
-            lista_alturas_alcanzadas[p].append(pos_antiguo[p])
-        
-        if pos_z[p] < 0.5:
-            #print("Rebote", pos_z[p])
-            
-            vel_z[p] = vel_z[p] * -1
-            angulo_rebote = AnguloRebote(vel_z[p], vel_x[p])
-            vel_x[p] = UPrima(angulo_rebote, vel_z[p])
-            vel_y[p] = VPrima(vel_x[p])
-            pos_z[p] = 0.501
-            total_saltos[p] += 1
+    for p in np.where(pos_z < 0.5)[0]:
+        vel_z[p] = vel_z[p] * -1
+        angulo_rebote = AnguloRebote(vel_z[p], vel_x[p])
+        vel_x[p] = UPrima(angulo_rebote, vel_z[p])
+        vel_y[p] = VPrima(vel_x[p])
+        pos_z[p] = 0.501
+        total_saltos[p] += 1
 
     t_simulacion -= delta_t
 
