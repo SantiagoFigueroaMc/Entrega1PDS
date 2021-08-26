@@ -141,5 +141,5 @@ for p in range(len(pos_x)):
 GuardarResultadosEnArchivo(archivo, resultados)
 
 
-print(f"Done in {time.time() - t_cero:.2f} sconds")
+print(f"Done in {time.time() - t_cero:.2f} seconds")
 #print(pos_z)
