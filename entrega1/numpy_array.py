@@ -42,32 +42,34 @@ def ObtenerDatos(nombre_archivo):
             break
 
     archivo.close()
-    return simulacion,pos_x,pos_y,pos_z,vel_x,vel_y,vel_z
+    return simulacion,np.array(pos_x),np.array(pos_y),np.array(pos_z),np.array(vel_x),np.array(vel_y),np.array(vel_z)
 
 
 
 
-archivo="input01"
-dato = ObtenerDatos(f"{archivo}.in")
+archivo="input03"
 
-entorno= dato[0]
+
+# posiciones y velocidades para tres particulas
+entorno,pos_x, pos_y, pos_z, vel_x, vel_y, vel_z = ObtenerDatos(f"{archivo}.in")
 t_simulacion = entorno.tiempo_simulacion
 delta_t = entorno.delta_t
 const = 1 + entorno.relacion_densidad_agua + 0.5
-    
-# posiciones para tres particulas
-pos_x = np.array(dato[1])
-pos_y = np.array(dato[2])
-pos_z = np.array(dato[3])
-# velocidades para tres particulas
-vel_x = np.array(dato[4])
-vel_y = np.array(dato[5])
-vel_z = np.array(dato[6])
+lista_alturas_alcanzadas = []
 
+for l in range(len(pos_x)):
+    lista_alturas_alcanzadas.append([])
+
+total_saltos = [0] * len(pos_x)
 t_cero = time.time()
+
+
+
 # simular 100 iteraciones
-while(t_simulacion> 0): 
+while(t_simulacion > 0): 
     #print("Tiempo restante:", t_simulacion)
+    vel_antiguo = vel_z
+    pos_antiguo = pos_z
     v_rel_x = VRelativaX(vel_x, entorno.taus, pos_z)
     
     mgR =  MagnitudVRelativa(v_rel_x, vel_y, vel_z)
@@ -100,18 +102,44 @@ while(t_simulacion> 0):
     pos_x = Posicion(pos_x, vel_x, delta_t)
     pos_y = Posicion(pos_y, vel_y, delta_t)
     pos_z = Posicion(pos_z, vel_z, delta_t)
+    
+
 
     for p in range(len(pos_z)):
+        
+        if (pos_z[p] < pos_antiguo[p]):
+            lista_alturas_alcanzadas[p].append(pos_antiguo[p])
+        
         if pos_z[p] < 0.5:
             #print("Rebote", pos_z[p])
-            pos_z[p] = 0.501
+            
             vel_z[p] = vel_z[p] * -1
             angulo_rebote = AnguloRebote(vel_z[p], vel_x[p])
             vel_x[p] = UPrima(angulo_rebote, vel_z[p])
             vel_y[p] = VPrima(vel_x[p])
-            #total_saltos += 1
+            pos_z[p] = 0.501
+            total_saltos[p] += 1
 
     t_simulacion -= delta_t
 
+resultados=[]
+
+
+for p in range(len(pos_x)):
+    h_max = max(lista_alturas_alcanzadas[p])
+    #h_max=1
+    h_promedio = np.mean(lista_alturas_alcanzadas[p])
+    resultado = {
+        "posiciones_finales":[round(pos_x[p],2), round(pos_y[p],2), round(pos_z[p],2)],
+        "cantidad_de_saltos":total_saltos[p],
+        "altura_maxima":round(h_max,2),
+        "promedio_altura_saltos":round(h_promedio,2)
+    }
+    resultados.append(resultado)
+
+#print(resultados)
+GuardarResultadosEnArchivo(archivo, resultados)
+
+
 print(f"Done in {time.time() - t_cero:.2f} sconds")
-print(pos_z)
+#print(pos_z)

@@ -19,8 +19,6 @@ def SimularParticula(p_id, particula_simulada, entorno, resultados_reales):
     h_max = 0.0
     h_promedio = 0.0
 
-    direccion_z = False #True sube, False baja
-    direccion_z_antiguo = False
 
     nueva_particula = particula_simulada
 
@@ -140,32 +138,36 @@ def main():
     filename = "input01"
 
     total_time = time.time()
+    
 
     entorno, particulas = ObtenerDatos(f"{filename}.in")
     
-    particulas = particulas[:10] # Pool no aguanta más de 62 trabajadores
-
-    pool = mp.Pool(len(particulas))
-
-    jobs = []
-
-    for p in range(len(particulas)):
-        particula = particulas[p]
-        job = pool.apply_async(SimularParticula, (p, particula, entorno, results))
-        jobs.append(job)
-
-    for job in jobs:
-        job.get()
-
-    pool.close()
-    pool.join()
-
-    lista_resultados = []
-    for i in range(len(particulas)):
-        lista_resultados.append(results[i])
-
-    print(f"{len(particulas)} particula(s) simladas en {time.time() - total_time:.2f} segundos")
-    GuardarResultadosEnArchivo(filename, lista_resultados)
+    
+    else:
+        particulas = particulas[:10] # Pool no aguanta más de 62 trabajadores
+    
+        pool = mp.Pool(len(particulas))
+    
+        jobs = []
+    
+    
+        for p in range(len(particulas)):
+            particula = particulas[p]
+            job = pool.apply_async(SimularParticula, (p, particula, entorno, results))
+            jobs.append(job)
+    
+        for job in jobs:
+            job.get()
+    
+        pool.close()
+        pool.join()
+    
+        lista_resultados = []
+        for i in range(len(particulas)):
+            lista_resultados.append(results[i])
+    
+        print(f"{len(particulas)} particula(s) simladas en {time.time() - total_time:.2f} segundos")
+        GuardarResultadosEnArchivo(filename, lista_resultados)
 
 if __name__ == "__main__":
     main()
